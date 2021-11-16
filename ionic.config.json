@@ -1,0 +1,7 @@
+{
+  "name": "Lohnberechner",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
