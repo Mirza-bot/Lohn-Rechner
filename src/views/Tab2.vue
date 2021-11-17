@@ -2,47 +2,215 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Lohn mit dem {{counter}}</ion-title>
+        <ion-title
+          >{{ calendar[0].calendarMonth }}.{{
+            calendar[0].calendarYear
+          }}
+          </ion-title
+        >
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">counter</ion-title>
-        </ion-toolbar>
-      </ion-header>
-      
+      <ion-grid>
+        <ion-row>
+          <ion-col size="1.7" class="weekdays">Mo</ion-col>
+          <ion-col size="1.7" class="weekdays">Di</ion-col>
+          <ion-col size="1.7" class="weekdays">Mi</ion-col>
+          <ion-col size="1.7" class="weekdays">Do</ion-col>
+          <ion-col size="1.7" class="weekdays">Fr</ion-col>
+          <ion-col size="1.7" class="weekdays">Sa</ion-col>
+          <ion-col size="1.7" class="weekdays">So</ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col
+            :class="dayStatus(day.status)"
+            size="1.7"
+            v-for="day in calendar"
+            :key="calendar.indexOf(day)"
+          >
+            <ul>
+              <li>
+                {{ day.calendarDay }}
+              </li>
+              <li>
+                <ion-badge class="shift_badge" color="dark">{{
+                  day.shift
+                }}</ion-badge>
+              </li>
+              <li v-show="day.holiday"><p>F</p></li>
+            </ul>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab-button>
+          <ion-icon :icon="arrowBackCircle"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-list side="start">
+          <ion-fab-button><ion-icon :icon="medkit" size="large"></ion-icon></ion-fab-button>
+          <ion-fab-button
+            >
+          </ion-fab-button>
+        </ion-fab-list>
+      </ion-fab>
     </ion-content>
   </ion-page>
 </template>
 
 <script lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/vue';
-import { useStore } from 'vuex'
-import { key } from '../store/index'
-import { computed } from '@vue/reactivity';
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonCol,
+  IonGrid,
+  IonRow,
+  IonBadge,
+  IonFab,
+  IonFabList,
+  IonFabButton,
+  IonIcon,
+} from "@ionic/vue";
+import {
+  arrowBackCircle,
+  arrowForwardCircle,
+  arrowUpCircle,
+  medkit,
+  person,
+  settings,
+  share,
+} from "ionicons/icons";
+import { useStore } from "vuex";
+import { key } from "../store/index";
+import { computed } from "@vue/reactivity";
 
-
-export default  {
+export default {
   setup() {
-    const store = useStore(key)
+    const store = useStore(key);
 
+    function setCalendar() {
+      store.dispatch("createCalendar");
+    }
 
-  const counter = computed((): number =>  {
-    return store.getters.getCount
-  })
+    function sortCalendar() {
+      store.commit("sortCalendar");
+    }
 
-  const increment = (value: number) => {
-    store.commit("incrementCount", value)
-  }
+    const calendar = computed(() => {
+      setCalendar();
+      sortCalendar();
+      return store.getters.getCalendar;
+    });
 
+    const dayStatus = (payload: string) => {
+      if (payload === "worked") {
+        return "worked_status";
+      } else if (payload === "sick") {
+        return "sick_status";
+      } else if (payload === "weekend") {
+        return "weekend_status";
+      } else if (payload === "vacation") {
+        return "vacation_status";
+      } else return "no_status";
+    };
 
     return {
-      counter,
-      increment
-    }
+      calendar,
+      dayStatus,
+      arrowBackCircle,
+      arrowForwardCircle,
+      arrowUpCircle,
+      person,
+      settings,
+      share,
+      medkit
+    };
   },
-  
-  components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage }
-}
+
+  components: {
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonPage,
+    IonCol,
+    IonGrid,
+    IonRow,
+    IonBadge,
+    IonFab,
+    IonFabButton,
+    IonIcon,
+    IonFabList,
+  },
+};
 </script>
+
+<style scoped>
+ion-col.weekdays {
+  background: white;
+  color: black;
+  border: 1px solid black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+ion-col.no_status {
+  background: white;
+  color: black;
+  display: flex;
+  border: 1px solid black;
+  min-height: 15vh;
+}
+
+ion-col.worked_status {
+  background: #2dd36f;
+  color: white;
+  display: flex;
+  border: 1px solid black;
+  min-height: 15vh;
+}
+
+ion-col.sick_status {
+  background: rosybrown;
+  color: black;
+  display: flex;
+  border: 1px solid black;
+  min-height: 15vh;
+}
+
+ion-col.vacation_status {
+  background: #3dc2ff;
+  color: white;
+  display: flex;
+  border: 1px solid black;
+  min-height: 15vh;
+}
+
+ion-col.weekend_status {
+  background: #ffffff3b;
+  color: white;
+  display: flex;
+  border: 1px solid black;
+  min-height: 15vh;
+}
+
+ion-col > ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+ion-col > ul > li {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+ion-badge.shift_badge {
+  width: 100%;
+}
+
+</style>
