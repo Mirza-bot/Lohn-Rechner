@@ -3,11 +3,8 @@
     <ion-header>
       <ion-toolbar>
         <ion-title
-          >{{ calendar[0].calendarMonth }}.{{
-            calendar[0].calendarYear
-          }}
-          </ion-title
-        >
+          >{{ calendar[0].calendarMonth }}.{{ calendar[0].calendarYear }}
+        </ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true">
@@ -27,6 +24,9 @@
             size="1.7"
             v-for="day in calendar"
             :key="calendar.indexOf(day)"
+            @click="
+              marker($event.currentTarget.firstChild.firstChild.innerText)
+            "
           >
             <ul>
               <li>
@@ -47,9 +47,27 @@
           <ion-icon :icon="arrowBackCircle"></ion-icon>
         </ion-fab-button>
         <ion-fab-list side="start">
-          <ion-fab-button><ion-icon :icon="medkit" size="large"></ion-icon></ion-fab-button>
+          <ion-fab-button>
+            <ion-icon
+              class="sick_status"
+              :icon="medkit"
+              size="large"
+              @click="markerSwitch('sick')"
+            ></ion-icon
+          ></ion-fab-button>
           <ion-fab-button
-            >
+            ><ion-icon
+              :icon="airplane"
+              size="large"
+              class="vacation_status"
+              @click="markerSwitch('vacation')"
+            ></ion-icon>
+          </ion-fab-button>
+          <ion-fab-button>S1 </ion-fab-button>
+          <ion-fab-button>S2 </ion-fab-button>
+          <ion-fab-button>S3 </ion-fab-button>
+          <ion-fab-button
+            ><ion-icon :icon="trash" size="large"></ion-icon>
           </ion-fab-button>
         </ion-fab-list>
       </ion-fab>
@@ -78,6 +96,8 @@ import {
   arrowForwardCircle,
   arrowUpCircle,
   medkit,
+  airplane,
+  trash,
   person,
   settings,
   share,
@@ -89,6 +109,9 @@ import { computed } from "@vue/reactivity";
 export default {
   setup() {
     const store = useStore(key);
+
+    // Marker-Switch for calendar
+    let mode = "none";
 
     function setCalendar() {
       store.dispatch("createCalendar");
@@ -116,16 +139,34 @@ export default {
       } else return "no_status";
     };
 
+    const marker = (target: string) => {
+      calendar.value.forEach((day: any) => {
+        if (day["calendarDay"] === target && day["status"] !== mode) {
+          day["status"] = mode;
+        } else if (day["calendarDay"] === target && day["status"] === mode) {
+          day["status"] = "none"
+        }
+      });
+    };
+
+    const markerSwitch = (payload: string) => {
+      mode = payload;
+    };
+
     return {
       calendar,
       dayStatus,
+      marker,
+      markerSwitch,
       arrowBackCircle,
       arrowForwardCircle,
       arrowUpCircle,
       person,
       settings,
       share,
-      medkit
+      medkit,
+      airplane,
+      trash,
     };
   },
 
@@ -174,11 +215,15 @@ ion-col.worked_status {
 }
 
 ion-col.sick_status {
-  background: rosybrown;
+  background: rgb(218, 96, 96);
   color: black;
   display: flex;
   border: 1px solid black;
   min-height: 15vh;
+}
+
+ion-icon.sick_status {
+  color: rgb(218, 96, 96);
 }
 
 ion-col.vacation_status {
@@ -187,6 +232,10 @@ ion-col.vacation_status {
   display: flex;
   border: 1px solid black;
   min-height: 15vh;
+}
+
+ion-icon.vacation_status {
+  color: #39bffd;
 }
 
 ion-col.weekend_status {
@@ -212,5 +261,4 @@ ion-col > ul > li {
 ion-badge.shift_badge {
   width: 100%;
 }
-
 </style>

@@ -13,6 +13,7 @@ interface Calendar {
   calendarYear: string;
   status: string;
   shift: string;
+  hours: number;
   holiday: boolean;
 }
 
@@ -80,6 +81,7 @@ export const store = createStore<State>({
             calendarYear: calendarData[2],
             status: "",
             shift: "S3",
+            hours: 7.7,
             holiday: false,
           };
           dataArray.push(dayData);
@@ -113,9 +115,8 @@ export const store = createStore<State>({
           day.holiday = true;
           day.status = "vacation";
         } else if (day.dayName === "Samstag" || day.dayName === "Sonntag") {
-            day.status = "weekend"
-        }
-        else continue;
+          day.status = "weekend";
+        } else continue;
       }
     },
   },
