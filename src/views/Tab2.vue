@@ -63,11 +63,15 @@
               @click="markerSwitch('vacation')"
             ></ion-icon>
           </ion-fab-button>
-          <ion-fab-button>S1 </ion-fab-button>
-          <ion-fab-button>S2 </ion-fab-button>
-          <ion-fab-button>S3 </ion-fab-button>
+          <ion-fab-button @click="markerSwitch('S1')">S1 </ion-fab-button>
+          <ion-fab-button @click="markerSwitch('S2')">S2 </ion-fab-button>
+          <ion-fab-button @click="markerSwitch('S3')">S3 </ion-fab-button>
           <ion-fab-button
-            ><ion-icon :icon="trash" size="large"></ion-icon>
+            ><ion-icon
+              :icon="trash"
+              size="large"
+              @click="markerSwitch('trash')"
+            ></ion-icon>
           </ion-fab-button>
         </ion-fab-list>
       </ion-fab>
@@ -141,12 +145,38 @@ export default {
 
     const marker = (target: string) => {
       calendar.value.forEach((day: any) => {
-        if (day["calendarDay"] === target && day["status"] !== mode) {
+        if (
+          day["calendarDay"] === target &&
+          (day["dayName"] === "Samstag" || day["dayName"] === "Sonntag") &&
+          mode === "trash"
+        ) {
+          day["status"] = "weekend";
+          day["shift"] = "";
+        } else if (day["calendarDay"] === target && mode === "trash") {
+          day["status"] = "";
+          day["shift"] = "";
+        } else if (
+          day["calendarDay"] === target &&
+          day["status"] !== mode &&
+          (mode === "vacation" || mode === "sick")
+        ) {
           day["status"] = mode;
+          day["shift"] = "";
         } else if (day["calendarDay"] === target && day["status"] === mode) {
-          day["status"] = "none"
+          day["status"] = "";
+        } else if (
+          day["calendarDay"] === target &&
+          day["shift"] !== mode &&
+          (mode === "S1" || mode === "S2" || mode === "S3")
+        ) {
+          day["shift"] = mode;
+          day["status"] = "worked";
+        } else if (day["calendarDay"] === target && day["shift"] === mode) {
+          day["shift"] = "";
+          day["status"] = "";
         }
       });
+      store.dispatch("calculateHours")
     };
 
     const markerSwitch = (payload: string) => {

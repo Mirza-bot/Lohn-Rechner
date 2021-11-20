@@ -4,6 +4,8 @@ import { createStore, Store } from "vuex";
 // define your typings for the store state
 export interface State {
   calendar: Array<Calendar>;
+  userData: Array<UserData>;
+  workedWeekends: Array<Calendar>;
 }
 
 interface Calendar {
@@ -17,12 +19,32 @@ interface Calendar {
   holiday: boolean;
 }
 
+interface UserData {
+  stundenLohn: number;
+  überstundenGBZ: number;
+  zweiteSchicht: number;
+  dritteSchicht: number;
+  gsZulagen: number;
+  ufLohn: number;
+}
+
 // define injection key
 export const key: InjectionKey<Store<State>> = Symbol();
 
 export const store = createStore<State>({
   state: {
     calendar: [],
+    userData: [
+      {
+        stundenLohn: 13.88,
+        überstundenGBZ: 16.25,
+        zweiteSchicht: 0.47,
+        dritteSchicht: 2.16,
+        gsZulagen: 0.55,
+        ufLohn: 3.8,
+      },
+    ],
+    workedWeekends: [],
   },
   getters: {
     getCalendar(state) {
@@ -80,7 +102,7 @@ export const store = createStore<State>({
             calendarMonth: calendarData[1],
             calendarYear: calendarData[2],
             status: "",
-            shift: "S3",
+            shift: "",
             hours: 7.7,
             holiday: false,
           };
@@ -89,6 +111,21 @@ export const store = createStore<State>({
       }
       const notNeededDate = dataArray.pop();
       context.commit("setCalendar", dataArray);
+    },
+    calculateHours(context) {
+      context.state.calendar.map((day) => {
+        if (
+          (day.dayName === "Samstag" || day.dayName === "Sonntag") &&
+          day.status === "weekend"
+        ) {
+          return;
+        } else if (
+          (day.dayName === "Samstag" || day.dayName === "Sonntag") &&
+          day.status === "worked"
+        ) {
+          context.state.workedWeekends.push(day)
+        }
+      });
     },
   },
   mutations: {
@@ -116,6 +153,7 @@ export const store = createStore<State>({
           day.status = "vacation";
         } else if (day.dayName === "Samstag" || day.dayName === "Sonntag") {
           day.status = "weekend";
+          day.shift = "";
         } else continue;
       }
     },
