@@ -233,7 +233,7 @@ ion-col.no_status {
   color: black;
   display: flex;
   border: 1px solid black;
-  min-height: 15vh;
+  min-height: 12vh;
 }
 
 ion-col.worked_status {
@@ -241,7 +241,7 @@ ion-col.worked_status {
   color: white;
   display: flex;
   border: 1px solid black;
-  min-height: 15vh;
+  min-height: 12vh;
 }
 
 ion-col.sick_status {
@@ -249,7 +249,7 @@ ion-col.sick_status {
   color: black;
   display: flex;
   border: 1px solid black;
-  min-height: 15vh;
+  min-height: 12vh;
 }
 
 ion-icon.sick_status {
@@ -261,7 +261,7 @@ ion-col.vacation_status {
   color: white;
   display: flex;
   border: 1px solid black;
-  min-height: 15vh;
+  min-height: 12vh;
 }
 
 ion-icon.vacation_status {
@@ -273,7 +273,7 @@ ion-col.weekend_status {
   color: white;
   display: flex;
   border: 1px solid black;
-  min-height: 15vh;
+  min-height: 12vh;
 }
 
 ion-col > ul {

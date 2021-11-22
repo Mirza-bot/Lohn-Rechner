@@ -6,6 +6,11 @@ export interface State {
   calendar: Array<Calendar>;
   userData: Array<UserData>;
   workedWeekends: Array<Calendar>;
+  workedWeekdays: Array<Calendar>;
+  sickDays: Array<Calendar>;
+  vacationDays: Array<Calendar>;
+  holidays: Array<Calendar>;
+  workedHolidays: Array<Calendar>;
 }
 
 interface Calendar {
@@ -45,10 +50,60 @@ export const store = createStore<State>({
       },
     ],
     workedWeekends: [],
+    workedWeekdays: [],
+    sickDays: [],
+    vacationDays: [],
+    holidays: [],
+    workedHolidays: [],
   },
   getters: {
     getCalendar(state) {
       return state.calendar;
+    },
+    getWorkedWeekends(state) {
+      let hours = 0;
+      state.workedWeekends.forEach((day) => {
+        if (day.dayName === "Samstag") {
+          hours = hours + day.hours * 1.5;
+        } else if (day.dayName === "Sonntag") {
+          hours = hours + day.hours * 2;
+        }
+      });
+      return hours;
+    },
+    getWorkedWeekDays(state) {
+      let hours = 0;
+      state.workedWeekdays.forEach((day) => {
+        if (day.holiday === false) {
+          hours = hours + day.hours;
+        } else return;
+      });
+      return hours;
+    },
+    getWorkedHolidayHours(state) {
+      let hours = 0;
+      state.workedHolidays.forEach((day) => {
+        hours = hours + day.hours;
+      });
+      return hours;
+    },
+    getVacationHours(state) {
+      let hours = 0;
+      state.vacationDays.forEach((day) => {
+        if (day.dayName !== "Samstag" && day.dayName !== "Sonntag") {
+          hours = hours + day.hours;
+        } else return;
+      });
+      return hours;
+    },
+    getSickHours(state) {
+      let hours = 0;
+      state.sickDays.forEach((day) => {
+        if (day.dayName !== "Samstag" && day.dayName !== "Sonntag") {
+          hours = hours + day.hours;
+        }
+      });
+      return hours;
     },
   },
   actions: {
@@ -113,8 +168,23 @@ export const store = createStore<State>({
       context.commit("setCalendar", dataArray);
     },
     calculateHours(context) {
+      const weekends: Array<Calendar> = [];
+      const weekdays: Array<Calendar> = [];
+      const sickdays: Array<Calendar> = [];
+      const vacationdays: Array<Calendar> = [];
+      const holiDays: Array<Calendar> = [];
+      const workedHolidays: Array<Calendar> = [];
       context.state.calendar.map((day) => {
-        if (
+        if (day.holiday === true && day.status !== "worked") {
+          holiDays.push(day);
+        } else if (
+          day.holiday === true &&
+          day.status === "worked" &&
+          day.dayName !== "Samstag" &&
+          day.dayName !== "Sonntag"
+        ) {
+          workedHolidays.push(day);
+        } else if (
           (day.dayName === "Samstag" || day.dayName === "Sonntag") &&
           day.status === "weekend"
         ) {
@@ -123,9 +193,21 @@ export const store = createStore<State>({
           (day.dayName === "Samstag" || day.dayName === "Sonntag") &&
           day.status === "worked"
         ) {
-          context.state.workedWeekends.push(day)
+          weekends.push(day);
+        } else if (day.status === "sick") {
+          sickdays.push(day);
+        } else if (day.status === "vacation") {
+          vacationdays.push(day);
+        } else if (day.status === "worked") {
+          weekdays.push(day);
         }
       });
+      context.state.workedWeekends = weekends;
+      context.state.workedWeekdays = weekdays;
+      context.state.sickDays = sickdays;
+      context.state.vacationDays = vacationdays;
+      context.state.holidays = holiDays;
+      context.state.workedHolidays = workedHolidays;
     },
   },
   mutations: {
