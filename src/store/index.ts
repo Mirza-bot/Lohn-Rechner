@@ -11,6 +11,13 @@ export interface State {
   vacationDays: Array<Calendar>;
   holidays: Array<Calendar>;
   workedHolidays: Array<Calendar>;
+  salary: number;
+  overtimeSalary: number;
+  overtimeHolidays: number;
+  holidaySalary: number;
+  offDaySalary: number;
+  wholeSalary: number;
+  allowances: number;
 }
 
 interface Calendar {
@@ -49,6 +56,13 @@ export const store = createStore<State>({
         ufLohn: 3.8,
       },
     ],
+    salary: 0,
+    overtimeSalary: 0,
+    overtimeHolidays: 0,
+    holidaySalary: 0,
+    offDaySalary: 0,
+    wholeSalary: 0,
+    allowances: 0,
     workedWeekends: [],
     workedWeekdays: [],
     sickDays: [],
@@ -69,7 +83,8 @@ export const store = createStore<State>({
           hours = hours + day.hours * 2;
         }
       });
-      return hours;
+      state.overtimeSalary = hours * state.userData[0].überstundenGBZ;
+      return hours.toFixed(2);
     },
     getWorkedWeekDays(state) {
       let hours = 0;
@@ -78,14 +93,21 @@ export const store = createStore<State>({
           hours = hours + day.hours;
         } else return;
       });
-      return hours;
+      return hours.toFixed(2);
+    },
+    getHolidays(state) {
+      let hours = 0;
+      state.holidays.forEach((day) => {
+        hours = hours + day.hours;
+      });
+      return hours.toFixed(2);
     },
     getWorkedHolidayHours(state) {
       let hours = 0;
       state.workedHolidays.forEach((day) => {
         hours = hours + day.hours;
       });
-      return hours;
+      return hours.toFixed(2);
     },
     getVacationHours(state) {
       let hours = 0;
@@ -94,7 +116,7 @@ export const store = createStore<State>({
           hours = hours + day.hours;
         } else return;
       });
-      return hours;
+      return hours.toFixed(2);
     },
     getSickHours(state) {
       let hours = 0;
@@ -103,7 +125,20 @@ export const store = createStore<State>({
           hours = hours + day.hours;
         }
       });
-      return hours;
+      return hours.toFixed(2);
+    },
+    getBaseSalary(state) {
+      return state.salary.toFixed(2);
+    },
+    getAllowances(state) {
+      return state.allowances.toFixed(2);
+    },
+    getOvertimeSalary(state) {
+        const hours = state.overtimeSalary + state.overtimeHolidays
+      return hours.toFixed(2);
+    },
+    getHolidaySalary(state) {
+      return state.holidaySalary.toFixed(2);
     },
   },
   actions: {
@@ -208,6 +243,102 @@ export const store = createStore<State>({
       context.state.vacationDays = vacationdays;
       context.state.holidays = holiDays;
       context.state.workedHolidays = workedHolidays;
+    },
+    calculateSalary(context) {
+      let baseSalary = 0;
+      let allowances = 0;
+      context.state.workedWeekdays.forEach((day) => {
+        allowances =
+          allowances + day.hours * context.state.userData[0].gsZulagen;
+        if (day.shift === "S1") {
+          baseSalary =
+            baseSalary + context.state.userData[0].stundenLohn * day.hours;
+        } else if (day.shift === "S2") {
+          baseSalary =
+            baseSalary +
+            (context.state.userData[0].stundenLohn +
+              context.state.userData[0].zweiteSchicht) *
+              day.hours;
+        } else if (day.shift === "S3") {
+          baseSalary =
+            baseSalary +
+            (context.state.userData[0].stundenLohn +
+              context.state.userData[0].dritteSchicht) *
+              day.hours;
+        }
+      });
+      context.state.salary = baseSalary;
+      context.state.allowances = allowances;
+    },
+    calcWeekendHours(context) {
+      let overtimeSalary = 0;
+      context.state.workedWeekends.forEach((day) => {
+        if (day.shift === "S1" && day.dayName === "Samstag") {
+          overtimeSalary =
+            overtimeSalary +
+            context.state.userData[0].überstundenGBZ * 1.5 * day.hours;
+        } else if (day.shift === "S2" && day.dayName === "Samstag") {
+          overtimeSalary =
+            overtimeSalary +
+            (context.state.userData[0].überstundenGBZ * 1.5 +
+              context.state.userData[0].zweiteSchicht) *
+              day.hours;
+        } else if (day.shift === "S3" && day.dayName === "Samstag") {
+          overtimeSalary =
+            overtimeSalary +
+            (context.state.userData[0].überstundenGBZ * 1.5 +
+              context.state.userData[0].dritteSchicht) *
+              day.hours;
+        } else if (day.shift === "S1" && day.dayName === "Sonntag") {
+          overtimeSalary =
+            overtimeSalary +
+            context.state.userData[0].überstundenGBZ * 2 * day.hours;
+        } else if (day.shift === "S2" && day.dayName === "Sonntag") {
+          overtimeSalary =
+            overtimeSalary +
+            (context.state.userData[0].überstundenGBZ * 2 +
+              context.state.userData[0].zweiteSchicht) *
+              day.hours;
+        } else if (day.shift === "S3" && day.dayName === "Sonntag") {
+          overtimeSalary =
+            overtimeSalary +
+            (context.state.userData[0].überstundenGBZ * 2 +
+              context.state.userData[0].dritteSchicht) *
+              day.hours;
+        }
+      });
+      context.state.overtimeSalary = overtimeSalary;
+    },
+    calcHolidaySalary(context) {
+      let holidayHours = 0;
+      context.state.holidays.forEach((day) => {
+        holidayHours =
+          holidayHours + day.hours * context.state.userData[0].ufLohn;
+      });
+      context.state.vacationDays.forEach((day) => {
+          holidayHours = holidayHours + day.hours * context.state.userData[0].ufLohn
+      })
+      context.state.holidaySalary = holidayHours;
+    },
+    calcWorkedHoliday(context) {
+      let holidayHours = 0;
+      context.state.workedHolidays.forEach((day) => {
+        if (day.shift === "S1") {
+          holidayHours =
+            holidayHours + day.hours * context.state.userData[0].überstundenGBZ;
+        } else if (day.shift === "S2") {
+          holidayHours =
+            holidayHours +
+            day.hours *
+              (context.state.userData[0].überstundenGBZ +
+                context.state.userData[0].zweiteSchicht);
+        } else if ( day.shift === "S3") {
+            holidayHours = holidayHours + day.hours *
+            (context.state.userData[0].überstundenGBZ +
+              context.state.userData[0].dritteSchicht);
+        }
+      });
+      context.state.overtimeHolidays = holidayHours
     },
   },
   mutations: {

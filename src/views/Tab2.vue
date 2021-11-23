@@ -177,6 +177,10 @@ export default {
         }
       });
       store.dispatch("calculateHours")
+      store.dispatch("calculateSalary")
+      store.dispatch("calcWeekendHours")
+      store.dispatch("calcHolidaySalary")
+      store.dispatch("calcWorkedHoliday")
     };
 
     const markerSwitch = (payload: string) => {
