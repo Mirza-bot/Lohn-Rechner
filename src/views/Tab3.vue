@@ -2,27 +2,40 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Berechnung</ion-title>
+        <ion-title class="title">Berechnung</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true">
+      <ion-button color="success" expand="block" @click="recalculate"
+        >Neuberechnug <ion-icon :icon="reloadCircleSharp"></ion-icon>
+      </ion-button>
       <ion-list>
         <ion-item>
           <ion-list-header> Lohnberechnung: </ion-list-header>
         </ion-item>
         <ion-item>
           <ion-label>
-            Grundlohn zzgl. 2- u. 3-Schicht: <span class="user_data">{{ baseSalary }}€</span>
+            Grundlohn zzgl. 2- u. 3-Schicht:
+            <span class="user_data">{{ baseSalary }}€</span>
           </ion-label>
         </ion-item>
         <ion-item>
-          <ion-label>Gefahren- u. Schmutzzulage:  <span class="user_data">{{ allowances }}€</span> </ion-label>
+          <ion-label
+            >Gefahren- u. Schmutzzulage:
+            <span class="user_data">{{ allowances }}€</span>
+          </ion-label>
         </ion-item>
         <ion-item>
-          <ion-label>Überstunden-Bezug: <span class="user_data"> {{overtime}}€ </span></ion-label>
+          <ion-label
+            >Überstunden-Bezug:
+            <span class="user_data"> {{ overtime }}€ </span></ion-label
+          >
         </ion-item>
         <ion-item>
-          <ion-label> Feiertags- und Urlaubsvergütung: <span class="user_data"> {{holidaySalary}}€ </span> </ion-label>
+          <ion-label>
+            Feiertags- und Urlaubsvergütung:
+            <span class="user_data"> {{ holidaySalary }}€ </span>
+          </ion-label>
         </ion-item>
       </ion-list>
       <ion-list>
@@ -77,7 +90,10 @@ import {
   IonItem,
   IonLabel,
   IonListHeader,
+  IonButton,
+  IonIcon,
 } from "@ionic/vue";
+import { reloadCircleSharp } from "ionicons/icons";
 import { useStore } from "vuex";
 import { key } from "../store/index";
 import { computed } from "@vue/reactivity";
@@ -94,9 +110,19 @@ export default {
     IonItem,
     IonLabel,
     IonListHeader,
+    IonButton,
+    IonIcon,
   },
   setup() {
     const store = useStore(key);
+
+    const recalculate = () => {
+      store.dispatch("calculateHours");
+      store.dispatch("calculateSalary");
+      store.dispatch("calcWeekendHours");
+      store.dispatch("calcHolidaySalary");
+      store.dispatch("calcWorkedHoliday");
+    };
 
     const workedWeekends = computed(() => {
       return store.getters.getWorkedWeekends;
@@ -131,12 +157,12 @@ export default {
     });
 
     const overtime = computed(() => {
-      return store.getters.getOvertimeSalary
-    })
+      return store.getters.getOvertimeSalary;
+    });
 
     const holidaySalary = computed(() => {
-      return store.getters.getHolidaySalary
-    })
+      return store.getters.getHolidaySalary;
+    });
     return {
       workedWeekends,
       workedWeekDays,
@@ -148,6 +174,8 @@ export default {
       allowances,
       overtime,
       holidaySalary,
+      reloadCircleSharp,
+      recalculate
     };
   },
 };
@@ -162,5 +190,13 @@ ion-list-header {
 
 .user_data {
   float: right;
+}
+
+ion-button {
+  font-size: 1.3rem;
+}
+
+ion-title {
+  font-size: 1.5rem;
 }
 </style>

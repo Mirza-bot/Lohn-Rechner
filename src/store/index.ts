@@ -48,12 +48,12 @@ export const store = createStore<State>({
     calendar: [],
     userData: [
       {
-        stundenLohn: 13.88,
-        überstundenGBZ: 16.25,
-        zweiteSchicht: 0.47,
-        dritteSchicht: 2.16,
-        gsZulagen: 0.55,
-        ufLohn: 3.8,
+        stundenLohn: 0,
+        überstundenGBZ: 0,
+        zweiteSchicht: 0,
+        dritteSchicht: 0,
+        gsZulagen: 0,
+        ufLohn: 0,
       },
     ],
     salary: 0,
@@ -128,6 +128,7 @@ export const store = createStore<State>({
       return hours.toFixed(2);
     },
     getBaseSalary(state) {
+        console.log(state.salary)
       return state.salary.toFixed(2);
     },
     getAllowances(state) {
@@ -370,5 +371,13 @@ export const store = createStore<State>({
         } else continue;
       }
     },
+    setUserData(state, payload) {
+        state.userData[0].stundenLohn = payload.stundenLohn
+        state.userData[0].überstundenGBZ = payload.ügbz
+        state.userData[0].zweiteSchicht = payload.zweiteSchicht
+        state.userData[0].dritteSchicht = payload.dritteSchicht
+        state.userData[0].gsZulagen = payload.gsZulage
+        state.userData[0].ufLohn = payload.ufVergütung
+    }
   },
 });
